@@ -1,0 +1,69 @@
+package tud.seemuh.nfcgate.network.c2s;
+// Message types for client<->server communication
+
+// Session management messages
+message Session {
+	enum SessionOpcode {             // Sent by:
+		SESSION_CREATE         = 0;  // Client
+		SESSION_CREATE_SUCCESS = 1;  // Server
+		SESSION_CREATE_FAIL    = 2;  // Server
+		SESSION_JOIN           = 3;  // Client
+		SESSION_JOIN_SUCCESS   = 4;  // Server
+		SESSION_JOIN_FAIL      = 5;  // Server
+		SESSION_LEAVE          = 6;  // Client
+		SESSION_LEAVE_SUCCESS  = 7;  // Server
+		SESSION_LEAVE_FAIL     = 8;  // Server
+		SESSION_PEER_JOINED    = 9;  // Server
+		SESSION_PEER_LEFT      = 10; // Server
+	}
+
+	enum SessionErrorCode {
+		ERROR_NOERROR                    = 0;
+		ERROR_CREATE_UNKOWN              = 1;
+		ERROR_CREATE_ALREADY_HAS_SESSION = 2;
+		ERROR_JOIN_UNKNOWN               = 3;
+		ERROR_JOIN_UNKNOWN_SECRET        = 4;
+		ERROR_JOIN_SESSION_FULL          = 5; // Session already has max # of participants
+		ERROR_JOIN_ALREADY_HAS_SESSION   = 6;
+		ERROR_LEAVE_UNKNOWN              = 7;
+		ERROR_LEAVE_UNKNOWN_SECRET       = 8;
+		ERROR_LEAVE_NOT_JOINED           = 9; // Trying to leave a session you never joined
+	}
+
+	// Opcode
+	// describes intent of the message
+	required SessionOpcode opcode = 1;
+
+	// Session secret
+	// Set by server on SESSION_CREATE_SUCCESS
+	// Required for SESSION_JOIN, SESSION_LEAVE
+	optional string session_secret = 2;
+
+	// Error code
+	// Set by server on every message
+	// Defaults to ERROR_NOERROR
+	required SessionErrorCode errcode = 3 [default = ERROR_NOERROR];
+}
+
+
+// Message passing message
+// Used to pass generic messages between clients
+message Data {
+	enum DataErrorCode {
+		ERROR_NOERROR             = 0;
+		ERROR_UNKNOWN             = 1;
+		ERROR_NO_SESSION          = 2;
+		ERROR_TRANSMISSION_FAILED = 3;
+	}
+
+	// Error code
+	// Set by the server on every message
+	// Defaults to ERROR_NOERROR
+	required DataErrorCode errcode = 1 [default = ERROR_NOERROR];
+
+	// binary blob
+	// Contains the serialized binary blob of the
+	// protobuf message that is passed to the other
+	// client
+	optional bytes blob = 2;
+}

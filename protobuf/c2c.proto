@@ -1,0 +1,57 @@
+package tud.seemuh.nfcgate.network.c2c;
+// Messages for client<->client communication (pot. via server)
+
+
+// NFC Data message
+// Message for passing NFC data between clients
+message NFCData {
+	enum DataSource {
+		READER = 0;
+		CARD   = 1;
+	}
+
+	// Data Source
+	// Signifies if this data is coming from a NFC Card
+	// or a NFC Reader
+	required DataSource data_source = 1;
+
+	// Data bytes
+	// The actual bytes to be sent
+	required bytes data_bytes = 2;
+}
+
+
+// Anticollision messages
+// Message for transmitting UID, historical byte, atqa and sak
+message Anticol {
+	required bytes UID = 1;
+
+	required bytes historical_byte = 2;
+	
+	required bytes ATQA = 3;
+
+	required bytes SAK = 4;
+}
+
+
+// Status Messages
+// Messages for communicating status changes
+message Status {
+	enum StatusCode {
+		KEEPALIVE_REQ   = 0;
+		KEEPALIVE_REP   = 1;
+		CARD_FOUND      = 2;
+		CARD_REMOVED    = 3;
+		READER_FOUND    = 4;
+		READER_REMOVED  = 5;
+		NFC_NO_CONN     = 6;
+		INVALID_MSG_FMT = 7;
+		NOT_IMPLEMENTED = 8;
+		UNKNOWN_MESSAGE = 9;
+		UNKNOWN_ERROR   = 10;
+	}
+
+	// Status Code
+	// The status code to be communicated
+	required StatusCode code = 1;
+}
