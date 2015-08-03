@@ -55,4 +55,53 @@ Clients can also leave a session by sending a session message with opcode SESSIO
 This concludes the session management part of the protocol.
 
 ## Message passing between clients
-TODO
+Once two clients are in a session, they can pass messages to each other. The process may seem overly complicated at first glance, but there is a reason for everything, and they will be explained over the course of this documentation.
+
+### Data messages
+Data messages are a defined in c2s.proto. They are used to wrap messages between clients in a way the server can understand. They contain an error code, which is used by the server to communicate forwarding errors if they occur, and a raw byte array, which contains the byte-encoded message that is passed. The data message is, as always, wrapped in a Wrapper message, and the byte-encoded message is, again, wrapped in a wrapper message. So, sending any message between clients involves the following stack:
+
+    Create message that should be passed to other client (discussed later)
+    Wrap in Wrapper message
+    Encode as byte array
+    Put byte array into data message 
+    Wrap data message in Wrapper message 
+    Send to server
+
+The reasons such a complicated scheme was chosen is encryption. Originally, we planned to perform end-to-end-encryption on all messages. In that case, a way to pass arbitrary byte strings between clients was required, so the data message was born. Due to time constraints, the E2E encryption was dropped from the plans for version 1.0, but the code was already built using data messages. As we are still planning on adding encryption eventually, we decided not to rewrite everything, only to re-write it back once encryption is added, and instead stuck with the data message. For the same reason, the byte array contained in the data message must contain a Wrapper message: We need to be able to parse it into a known message type, before being able to identify the type of message that was actually sent.
+
+If the server receives a wrapped data message, it performs the following algorithm (replies are data messages with an empty byte blob):
+
+    if (client is not in a session):
+        reply (errcode=ERROR_NO_SESSION)
+    else if (no second client in session):
+        reply (errcode=ERROR_NO_SESSION)
+    else:
+        try to forward message to other client
+        if (error occured during forwarding):
+            reply (errcode=ERROR_TRANSMISSION_FAILED)
+        else:
+            reply (errcode=ERROR_NOERROR)
+
+Now that we know how messages are passed between clients, let's take a look at the messages that can be passed. All of the following messages are passed in the same way: Create message, wrap in wrapper, serialize to byte array, create data message with byte array, pack in wrapper, serialize, send to server.
+
+### Anticol Messages
+Anticol messages (defined in c2c.proto) contain the information from the anticollision loop of the NFC protocol. This includes UID, ATQA, SAK and Historical byte. The messages are populated with the information and sent using data messages as described above. Is sent as soon as a client is connected to a new NFC Card.
+
+### NFCData Messages
+NFCData messages (also defined in c2c.proto) contain actual NFC APDUs, encoded as byte strings. Additionally, they contain some information about the source of the APDU (i.e. is it a message from an NFC reader or a reply by the card), encoded in the data_source field.
+
+### Status Message
+The Status message type (defined in c2c.proto) is used to convey information about the status of a client. The following types are defined:
+- KEEPALIVE_REQ: Keepalive message, used to test if the connection is still alive. MUST be answered with a KEEPALIVE_REP
+- KEEPALIVE_REP: Reply to KEEPALIVE_REQ
+- CARD_FOUND: Sent by a client that is in proximity to a Card. Will be followed by an Anticol message encoding information about the card.
+- CARD_REMOVED: Sent by a client if a previously detected card has left proximity
+- READER_FOUND: Sent if a client is in proximity to a reader
+- READER_REMOVED: Sent if the client leaves proximity to a previously discovered reader
+- NFC_NO_CONN: Sent in response to a NFCData message if the receiving client is not connected to any NFC device and thus cannot act upon the NFCData message.
+- INVALID_MSG_FMT: Sent if a client does not understand a received message. Could indicate that it is a legacy client that does not support new protocol messages, or that a message was corrupted.
+- NOT_IMPLEMENTED: Sent if a client understands a received message, but has not implemented the requested functionality. Mostly used during development if a function is only implemented as a stub, should not occur in production.
+- UNKNOWN_MESSAGE: Sent if a Wrapper message is received, but the encoded message cannot be understood. Similar to INVALID_MSG_FMT.
+- UNKNOWN_ERROR: Catchall status code if something went wrong, but the client is not quite sure what.
+
+It is the responsibility of the clients to act upon these status messages in a sensible way.
