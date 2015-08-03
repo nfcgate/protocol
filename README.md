@@ -94,14 +94,14 @@ Now that we know how messages are passed between clients, let's take a look at t
 The `Status` message type (defined in c2c.proto) is used to convey information about the status of a client. The following types are defined:
 - `KEEPALIVE_REQ`: Keepalive message, used to test if the connection is still alive. MUST be answered with a `KEEPALIVE_REP`
 - `KEEPALIVE_REP`: Reply to `KEEPALIVE_REQ`
-- `CARD_FOUND`: Sent by a client that is in proximity to a Card. Will be followed by an Anticol message encoding information about the card.
+- `CARD_FOUND`: Sent by a client that is in proximity to a Card. Will be followed by an `Anticol` message encoding information about the card.
 - `CARD_REMOVED`: Sent by a client if a previously detected card has left proximity
 - `READER_FOUND`: Sent if a client is in proximity to a reader
 - `READER_REMOVED`: Sent if the client leaves proximity to a previously discovered reader
-- `NFC_NO_CONN`: Sent in response to a NFCData message if the receiving client is not connected to any NFC device and thus cannot act upon the NFCData message.
+- `NFC_NO_CONN`: Sent in response to a `NFCData` message if the receiving client is not connected to any NFC device and thus cannot act upon the NFCData message.
 - `INVALID_MSG_FMT`: Sent if a client does not understand a received message. Could indicate that it is a legacy client that does not support new protocol messages, or that a message was corrupted.
 - `NOT_IMPLEMENTED`: Sent if a client understands a received message, but has not implemented the requested functionality. Mostly used during development if a function is only implemented as a stub, should not occur in production.
-- `UNKNOWN_MESSAGE`: Sent if a Wrapper message is received, but the encoded message cannot be understood. Similar to INVALID_MSG_FMT.
+- `UNKNOWN_MESSAGE`: Sent if a Wrapper message is received, but the encoded message cannot be understood. Similar to `INVALID_MSG_FMT`.
 - `UNKNOWN_ERROR`: Catchall status code if something went wrong, but the client is not quite sure what.
 
 It is the responsibility of the clients to act upon these status messages in a sensible way.
