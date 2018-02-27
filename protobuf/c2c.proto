@@ -22,15 +22,9 @@ message NFCData {
 
 
 // Anticollision messages
-// Message for transmitting UID, historical byte, atqa and sak
+// Message for transmitting NFC config
 message Anticol {
-	required bytes UID = 1;
-
-	required bytes historical_byte = 2;
-	
-	required bytes ATQA = 3;
-
-	required bytes SAK = 4;
+	required bytes CONFIG = 1;
 }
 
 
