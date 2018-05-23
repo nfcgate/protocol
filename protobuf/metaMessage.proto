@@ -1,6 +1,6 @@
 package tud.seemuh.nfcgate.network.meta;
-import "c2s.proto";
-import "c2c.proto";
+import "protocol/protobuf/c2s.proto";
+import "protocol/protobuf/c2c.proto";
 // Meta message types (used for both c2s and c2c)
 
 // Wrapper Message
