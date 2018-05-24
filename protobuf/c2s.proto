@@ -15,9 +15,6 @@ message ServerData {
 	// Describes intent of the sender
 	Opcode        opcode = 1;
 
-	// Shared session number
-	int32 session_number = 2;
-
 	// Binary blob containing the message content
-	bytes           data = 3;
+	bytes           data = 2;
 }
