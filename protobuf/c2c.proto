@@ -19,6 +19,9 @@ message NFCData {
 	
 	// If data is initial card data or continuation
 	DataType     data_type = 2;
+	
+	// Unix timestamp in millis
+	int64        timestamp = 4;
 
 	// The actual bytes to be sent
 	bytes             data = 3;
