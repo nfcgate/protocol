@@ -1,5 +1,5 @@
 syntax = "proto3";
-package tud.seemuh.nfcgate.network.c2c;
+package de.tu_darmstadt.seemoo.nfcgate.network.c2c;
 // Messages for client<->client communication
 
 // Message for passing NFC data between clients
